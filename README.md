@@ -1,5 +1,27 @@
 # dsh-ops 0.3.0 — prebuilt drop-in
 
+> ## 原作者 / Original author
+>
+> **这个仓库不是 dsh-ops 的作者。** 全部插件代码、架构与设计归原作者所有。
+>
+> | | |
+> |---|---|
+> | **项目** | [**T-Auto/dsh-ops**](https://github.com/T-Auto/dsh-ops) |
+> | **作者** | **风雪**（GitHub: [**@T-Auto**](https://github.com/T-Auto)） |
+> | **版权** | `Copyright (c) 2026 T-Auto and the dsh-ops contributors` |
+> | **许可证** | `MIT AND Apache-2.0`（见下方 License 一节） |
+> | **上游 npm** | [`dsh-ops`](https://www.npmjs.com/package/dsh-ops) |
+>
+> **请给原作者点 Star** ⭐ → https://github.com/T-Auto/dsh-ops
+>
+> 有问题、有 bug、有优化建议，请提到**上游仓库**的 Issues：
+> https://github.com/T-Auto/dsh-ops/issues
+>
+> 本仓库只做一件事：把上游 `main` 分支的 0.3.0 源码与**编译好的原生 worker**
+> 打包在一起，方便在没有 Rust 工具链的机器上安装。**没有对插件代码做任何修改。**
+
+---
+
 A ready-to-install snapshot of [T-Auto/dsh-ops](https://github.com/T-Auto/dsh-ops)
 **v0.3.0**, including the compiled native Rust worker, so a second machine needs
 no Rust toolchain.
@@ -7,6 +29,9 @@ no Rust toolchain.
 Upstream's npm `latest` is still `0.2.9`. `0.3.0` exists only on the `main`
 branch, and the worker is a build artifact that upstream's own `.gitignore`
 excludes (`runtime/`). This repository exists to carry both.
+
+**All credit for the plugin belongs to [@T-Auto](https://github.com/T-Auto) and
+the dsh-ops contributors.** This repository only repackages their work.
 
 ---
 
@@ -165,8 +190,35 @@ default-off background component, not the native file worker.
 
 ---
 
-## Licenses
+## Licenses and attribution
 
-Upstream ships `MIT AND Apache-2.0`: everything outside `vendor/fastctx/` is MIT,
-the vendored FastCtx tree is Apache-2.0. Both license files are preserved
-verbatim in `src/`. This repository adds only packaging scripts.
+**All plugin code in this repository is the work of the upstream author and is
+reproduced unmodified.** Nothing here is relicensed.
+
+| Part | Author | License |
+|---|---|---|
+| `src/` — the dsh-ops plugin | [@T-Auto](https://github.com/T-Auto) 风雪 and the dsh-ops contributors | MIT |
+| `src/vendor/fastctx/` | the FastCtx author | Apache-2.0 |
+| The distribution as a whole | — | `MIT AND Apache-2.0` |
+| `install.ps1`, `install.sh`, this README | packaging only | same terms as upstream |
+
+Copyright notice carried verbatim from upstream `src/LICENSE`:
+
+```
+MIT License
+
+Copyright (c) 2026 T-Auto and the dsh-ops contributors
+```
+
+The full upstream `LICENSE`, `NOTICE`, and `vendor/fastctx/LICENSE-APACHE` are
+preserved unmodified inside `src/`; `NOTICE` holds the composite-license
+statement and the attribution FastCtx requires. Read them there — this file only
+summarises.
+
+The package in `dist/` is byte-identical to what upstream's own
+`node bin/dsh-ops.mjs build-ptc` + `npm pack` produce from `main` (`857f917`),
+apart from containing the compiled worker. Verified hashes are in
+`checksums.txt`.
+
+**Please report bugs and feature requests upstream, not here:**
+https://github.com/T-Auto/dsh-ops/issues

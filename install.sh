@@ -6,6 +6,13 @@
 #   ./install.sh --enable-ptc         also enable the opt-in PTC component
 #   ./install.sh --skip-hash-check    skip package hash verification
 #
+# The dsh-ops plugin is the work of its original author:
+#     T-Auto / 风雪  <https://github.com/T-Auto/dsh-ops>
+#     Copyright (c) 2026 T-Auto and the dsh-ops contributors
+#     License: MIT AND Apache-2.0  (see src/LICENSE and src/NOTICE)
+# Please star and report issues upstream. This script only repackages and
+# installs their work; it changes no plugin code.
+#
 # IMPORTANT: the package in dist/ ships a Windows x64 native worker. On Linux or
 # macOS you must build the worker for your own target first:
 #
@@ -21,12 +28,15 @@ PROFILE="desktop"
 ENABLE_PTC=0
 SKIP_HASH=0
 
+UPSTREAM_REPO="https://github.com/T-Auto/dsh-ops"
+UPSTREAM_AUTHOR="T-Auto / 风雪"
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --profile)     PROFILE="$2"; shift 2 ;;
     --enable-ptc)  ENABLE_PTC=1; shift ;;
     --skip-hash-check) SKIP_HASH=1; shift ;;
-    -h|--help)     sed -n '2,20p' "$0"; exit 0 ;;
+    -h|--help)     sed -n '2,26p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -39,6 +49,13 @@ EXPECTED_VERSION="0.3.0"
 info() { printf '[dsh-ops] %s\n' "$*"; }
 warn() { printf '[dsh-ops] %s\n' "$*" >&2; }
 fail() { printf '[dsh-ops] ERROR: %s\n' "$*" >&2; exit 1; }
+
+printf '\n'
+printf '  dsh-ops 0.3.0  --  original author: %s\n' "$UPSTREAM_AUTHOR"
+printf '  %s\n' "$UPSTREAM_REPO"
+printf '  Copyright (c) 2026 T-Auto and the dsh-ops contributors.\n'
+printf '  License: MIT AND Apache-2.0. This installer only repackages their work.\n'
+printf '  Please star and report issues upstream.\n\n'
 
 [ -f "$PKG" ] || fail "package not found: $PKG"
 info "package : $(basename "$PKG") ($(wc -c < "$PKG") bytes)"
@@ -186,4 +203,10 @@ if [ "$ENABLE_PTC" -eq 1 ]; then
   echo '  PTC is enabled. To reach the advertised token reduction, start a session'
   echo '  with the "ptc" agent preset so the wire presentation is PTC-only.'
 fi
+echo
+printf '  dsh-ops is the work of %s.\n' "$UPSTREAM_AUTHOR"
+printf '    %s\n' "$UPSTREAM_REPO"
+printf '    Copyright (c) 2026 T-Auto and the dsh-ops contributors.\n'
+printf '    License: MIT AND Apache-2.0 (src/LICENSE, src/NOTICE).\n'
+printf '    Bugs and feature requests belong upstream, not in this repackaging.\n'
 echo

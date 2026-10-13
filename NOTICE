@@ -1,0 +1,96 @@
+dsh-ops 0.3.0 — prebuilt drop-in
+================================================================
+
+THIS REPOSITORY IS NOT THE ORIGINAL PROJECT.
+================================================================
+
+Everything in `src/` and `dist/` is the work of the original author and is
+reproduced here unmodified. Only the packaging scripts at the repository root
+(`install.ps1`, `install.sh`), this NOTICE, and `README.md` were written for
+this repackaging.
+
+Original project
+----------------
+
+    Project   : dsh-ops
+    Author    : 风雪
+    GitHub    : T-Auto  <https://github.com/T-Auto>
+    Repository: https://github.com/T-Auto/dsh-ops
+    npm       : https://www.npmjs.com/package/dsh-ops
+    Issues    : https://github.com/T-Auto/dsh-ops/issues
+
+Copyright
+---------
+
+    Copyright (c) 2026 T-Auto and the dsh-ops contributors
+
+Reproduced verbatim from the upstream `LICENSE`.
+
+License
+-------
+
+    MIT AND Apache-2.0
+
+This is the composite expression upstream declares. It applies because the
+distribution contains two bodies of work under two licenses:
+
+  1. The dsh-ops plugin — everything in `src/` except `src/vendor/fastctx/`.
+     Licensed MIT. Full text in `src/LICENSE`.
+
+  2. The vendored FastCtx source in `src/vendor/fastctx/`. Licensed Apache-2.0
+     by its author. Full text in `src/vendor/fastctx/LICENSE-APACHE`; the
+     attribution FastCtx requires and the third-party inventory are in
+     `src/vendor/fastctx/NOTICE`, `src/vendor/fastctx/THIRD_PARTY_LICENSES.md`,
+     and `src/vendor/fastctx/THIRD_PARTY_LICENSES_RUST.md`.
+
+`src/NOTICE` carries upstream's own full composite-license statement. Read it
+there; this file only summarises so the attribution is impossible to miss.
+
+Bundled Pdfium notices are in `src/vendor/fastctx/third-party/pdfium-7763/`.
+
+What this repository adds
+-------------------------
+
+Nothing that changes plugin behaviour. Specifically:
+
+  * `dist/dsh-ops-0.3.0.tgz` — the output of upstream's own
+    `node bin/dsh-ops.mjs build-ptc` followed by `npm pack`, run from upstream
+    `main` at commit `857f917` (version 0.3.0). It differs from what upstream's
+    own `npm pack` produces only in that the compiled native worker is present;
+    upstream's `.gitignore` excludes `runtime/`, so their repository cannot
+    carry it.
+
+  * `install.ps1` / `install.sh` — installers that call the official DSH CLI
+    and optionally flip the opt-in PTC component.
+
+  * `README.md`, `checksums.txt`, this file.
+
+No plugin source file was edited. Hashes are recorded in `checksums.txt` and
+enforced by both installers.
+
+Native worker provenance
+------------------------
+
+Built from `native/Cargo.lock` with Rust 1.98.1:
+
+    RUSTUP_TOOLCHAIN=1.98.1 cargo build --release --locked \
+        --manifest-path native/Cargo.toml
+    node bin/dsh-ops.mjs build-ptc
+
+    win32-x64 worker SHA-256:
+    31d26d8410c54d839e16e6af44790fd55263d234326cff68277ec6a3b811067c
+
+Upstream records its own build and verification status in `src/PROVENANCE.md`
+and `src/docs/native-ptc.md`. Read those for the authoritative account of what
+has and has not been verified upstream.
+
+Please report bugs upstream
+---------------------------
+
+Anything that is not about this repackaging belongs in the upstream tracker:
+
+    https://github.com/T-Auto/dsh-ops/issues
+
+If you find dsh-ops useful, star the original project:
+
+    https://github.com/T-Auto/dsh-ops

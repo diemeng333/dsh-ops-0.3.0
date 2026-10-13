@@ -1,6 +1,13 @@
 <#
   dsh-ops 0.3.0 installer for DSH Desktop (Windows x64)
 
+  The dsh-ops plugin is the work of its original author:
+      T-Auto / 风雪  <https://github.com/T-Auto/dsh-ops>
+      Copyright (c) 2026 T-Auto and the dsh-ops contributors
+      License: MIT AND Apache-2.0   (see src/LICENSE and src/NOTICE)
+  Please star and report issues upstream: https://github.com/T-Auto/dsh-ops
+  This script only repackages and installs their work; it changes no plugin code.
+
   Usage:
     pwsh -File install.ps1                  # install into the desktop profile
     pwsh -File install.ps1 -EnablePtc       # also enable the opt-in PTC component
@@ -20,6 +27,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+$UpstreamRepo = 'https://github.com/T-Auto/dsh-ops'
+$UpstreamAuthor = 'T-Auto / 风雪'
+
 $root = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $pkg  = Join-Path $root 'dist\dsh-ops-0.3.0.tgz'
 $sums = Join-Path $root 'checksums.txt'
@@ -30,6 +40,14 @@ $ExpectedVersion = '0.3.0'
 function Info([string]$m) { Write-Host "[dsh-ops] $m" }
 function Warn([string]$m) { Write-Host "[dsh-ops] $m" -ForegroundColor Yellow }
 function Fail([string]$m) { Write-Host "[dsh-ops] ERROR: $m" -ForegroundColor Red; exit 1 }
+
+Write-Host ''
+Write-Host "  dsh-ops 0.3.0  --  original author: $UpstreamAuthor" -ForegroundColor Cyan
+Write-Host "  $UpstreamRepo" -ForegroundColor Cyan
+Write-Host '  Copyright (c) 2026 T-Auto and the dsh-ops contributors.' -ForegroundColor DarkGray
+Write-Host '  License: MIT AND Apache-2.0. This installer only repackages their work.' -ForegroundColor DarkGray
+Write-Host '  Please star and report issues upstream.' -ForegroundColor DarkGray
+Write-Host ''
 
 # ---------------------------------------------------------------- 1. package
 
@@ -91,7 +109,36 @@ Info "dsh cli : $cli"
 
 # ---------------------------------------------------------------- 3. profile
 
-$dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFILE '.dsh' }
+# The desktop CLI ships as a .cmd shim that hardcodes its own DSH_HOME. An
+# inherited $env:DSH_HOME does NOT change where it installs, so trusting the
+# environment here would let the pre-check and the actual install disagree.
+# Prefer the shim's own value; fall back to the environment, then to ~/.dsh.
+function Get-DshHomeFromCli([string]$cliPath) {
+  if (-not $cliPath -or $cliPath -notmatch '\.cmd$') { return $null }
+  try {
+    $line = Select-String -LiteralPath $cliPath -Pattern '^\s*set\s+"?DSH_HOME=(.+?)"?\s*$' -ErrorAction Stop |
+      Select-Object -First 1
+    if ($line -and $line.Matches.Count -gt 0) {
+      $value = $line.Matches[0].Groups[1].Value.Trim('"').Trim()
+      if ($value) { return $value }
+    }
+  } catch { }
+  return $null
+}
+
+$cliHome = Get-DshHomeFromCli $cli
+$envHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { $null }
+$dshHome = if ($cliHome) { $cliHome } elseif ($envHome) { $envHome } else { Join-Path $env:USERPROFILE '.dsh' }
+
+if ($cliHome -and $envHome -and ($cliHome -ne $envHome)) {
+  Warn "DSH_HOME is set to '$envHome' but the desktop CLI installs into '$cliHome'."
+  Warn "An inherited DSH_HOME does not redirect the desktop profile; the CLI's own"
+  Warn "value is what matters. Refusing to install into an unexpected location."
+  Warn "Unset DSH_HOME and re-run to proceed against '$cliHome'."
+  exit 1
+}
+Info "dsh home: $dshHome"
+
 $profileDir = Join-Path $dshHome "profiles\$Profile"
 if (-not (Test-Path -LiteralPath (Join-Path $profileDir 'package.json'))) {
   Fail "profile '$Profile' is not initialised at $profileDir. Start DSH Desktop once, then re-run."
@@ -104,7 +151,19 @@ $fileSpec = 'file:' + ($pkg -replace '\\','/')
 Info "running : dsh plugin --profile $Profile add $fileSpec"
 
 & $cli plugin --profile $Profile add $fileSpec
-if ($LASTEXITCODE -ne 0) { Fail "official CLI exited with code $LASTEXITCODE" }
+if ($LASTEXITCODE -ne 0) {
+  $hint = ''
+  if ($LASTEXITCODE -eq -4048 -or $LASTEXITCODE -eq 5) {
+    $hint = @"
+
+The package manager could not replace a file in the profile, which normally
+means a running DSH process still holds it open. Close DSH Desktop, then re-run.
+If it persists, remove a stale lock left behind by an interrupted run:
+  Get-ChildItem "$profileDir" -Filter '*.yaml.*' | Remove-Item -Force
+"@
+  }
+  Fail "official CLI exited with code $LASTEXITCODE$hint"
+}
 
 $installed = Join-Path $profileDir "node_modules\dsh-ops\package.json"
 if (-not (Test-Path -LiteralPath $installed)) { Fail "install finished but $installed is missing" }
@@ -191,4 +250,10 @@ if ($EnablePtc) {
   Write-Host '  PTC is enabled. To reach the advertised token reduction, start a session'
   Write-Host '  with the "ptc" agent preset so the wire presentation is PTC-only.'
 }
+Write-Host ''
+Write-Host "  dsh-ops is the work of $UpstreamAuthor." -ForegroundColor Cyan
+Write-Host "    $UpstreamRepo" -ForegroundColor Cyan
+Write-Host '    Copyright (c) 2026 T-Auto and the dsh-ops contributors.' -ForegroundColor DarkGray
+Write-Host '    License: MIT AND Apache-2.0 (src/LICENSE, src/NOTICE).' -ForegroundColor DarkGray
+Write-Host '    Bugs and feature requests belong upstream, not in this repackaging.' -ForegroundColor DarkGray
 Write-Host ''
