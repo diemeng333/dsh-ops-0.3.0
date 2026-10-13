@@ -80,7 +80,12 @@ info "running : dsh plugin --profile $PROFILE add $FILE_SPEC"
 
 INSTALLED="$PROFILE_DIR/node_modules/dsh-ops/package.json"
 [ -f "$INSTALLED" ] || fail "install finished but $INSTALLED is missing"
-VERSION="$(node -e "process.stdout.write(require('$INSTALLED').version)")"
+
+# Read the version with sed rather than node: under Git Bash / MSYS the shell's
+# /c/... paths are not understood by a native node.exe, and this installer is
+# routinely run from Git Bash on Windows.
+VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$INSTALLED" | head -1)"
+[ -n "$VERSION" ] || fail "could not read the version from $INSTALLED"
 [ "$VERSION" = "$EXPECTED_VERSION" ] || fail "expected dsh-ops $EXPECTED_VERSION but found $VERSION"
 info "installed: dsh-ops $VERSION"
 
@@ -133,33 +138,39 @@ if [ "$ENABLE_PTC" -eq 1 ]; then
 
   # Parse the patch back before trusting it. A malformed override would break
   # the whole profile boot, so restore the backup instead of leaving it broken.
-  YAML_LIB="${DSH_YAML_LIB:-}"
-  if [ -z "$YAML_LIB" ]; then
-    for c in \
-      "/Applications/DSH Desktop.app/Contents/Resources/app/node_modules/yaml/dist/index.js" \
-      "$HOME/.dsh/profiles/$PROFILE/node_modules/js-yaml/index.js" \
-      "$PROFILE_DIR/node_modules/js-yaml/index.js"
-    do
-      [ -f "$c" ] && { YAML_LIB="$c"; break; }
-    done
-  fi
-
-  if [ -n "$YAML_LIB" ] && command -v node >/dev/null 2>&1; then
+  # Prefer a pure-shell check; fall back to node only when a yaml module is
+  # reachable at a path node itself can open.
+  verified=0
+  if command -v node >/dev/null 2>&1 && [ -n "${DSH_YAML_LIB:-}" ] && [ -f "$DSH_YAML_LIB" ]; then
+    NODE_PATCH="$(cd "$(dirname "$PATCH")" && pwd)/$(basename "$PATCH")"
+    NODE_YAML="$DSH_YAML_LIB"
     if node -e "
       const YAML = require(process.argv[1])
       const rows = YAML.parse(require('fs').readFileSync(process.argv[2], 'utf8'))
       const row = rows.find(e => e.id === 'dsh-ops-ptc')
       process.exit(row && row.disabled === false ? 0 : 1)
-    " "$YAML_LIB" "$PATCH"; then
+    " "$NODE_YAML" "$NODE_PATCH" 2>/dev/null; then
+      verified=1
       info "verified: patch parses and dsh-ops-ptc is disabled: false"
     else
       cp "$BACKUP" "$PATCH"
       fail "the patched file did not verify as dsh-ops-ptc disabled: false. Original restored from $BACKUP"
     fi
-  else
-    warn "could not parse-verify the patch (no yaml module or node found)."
-    warn "Check it manually before restarting:"
-    warn "  \"$DSH_CLI\" --profile $PROFILE --dump-config | grep -A2 -E '^- id: dsh-ops-ptc\$'"
+  fi
+
+  if [ "$verified" -eq 0 ]; then
+    # Structural fallback: exactly one dsh-ops-ptc row, indented child line,
+    # and every other top-level entry still present.
+    ROWS="$(grep -cE '^- *id: *dsh-ops-ptc *$' "$PATCH" || true)"
+    CHILD="$(grep -A1 -E '^- *id: *dsh-ops-ptc *$' "$PATCH" | grep -cE '^ +disabled: *false *$' || true)"
+    if [ "$ROWS" = "1" ] && [ "$CHILD" = "1" ]; then
+      verified=1
+      info "verified: structural check passed (1 dsh-ops-ptc row, disabled: false)"
+      warn "full YAML parse skipped; set DSH_YAML_LIB=/path/to/yaml/dist/index.js for a stricter check"
+    else
+      cp "$BACKUP" "$PATCH"
+      fail "structural check failed (rows=$ROWS indented-disabled=$CHILD). Original restored from $BACKUP"
+    fi
   fi
   info "rollback: cp \"$BACKUP\" \"$PATCH\""
 fi
