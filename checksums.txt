@@ -1,0 +1,4 @@
+64514e71997454e58713dd23e1be9b570974f12b70318cd8d97f5ad985299575 *dist/dsh-ops-0.3.0.tgz
+
+# Native worker inside dist/dsh-ops-0.3.0.tgz (runtime/win32-x64/dsh-ops-worker.exe)
+31d26d8410c54d839e16e6af44790fd55263d234326cff68277ec6a3b811067c  dsh-ops-worker.exe
