@@ -1,0 +1,149 @@
+{
+  "name": "dsh-ops",
+  "version": "0.3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Auto/dsh-ops.git"
+  },
+  "homepage": "https://github.com/T-Auto/dsh-ops#readme",
+  "bugs": {
+    "url": "https://github.com/T-Auto/dsh-ops/issues"
+  },
+  "os": [
+    "win32",
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "description": "Provides bash, PowerShell 7, and a suite of high-performance tools written in Rust for Windows DSH to enhance token efficiency",
+  "icon": "./icon.png",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "mcp",
+    "fastctx",
+    "repository-tools"
+  ],
+  "license": "MIT AND Apache-2.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./policy": {
+      "default": "./lib/policy.js"
+    },
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./shell": {
+      "default": "./lib/components/shell/index.js"
+    },
+    "./shell/package.json": "./lib/components/shell/package.json",
+    "./shell/locale/*.json": "./lib/components/shell/locale/*.json",
+    "./file": {
+      "default": "./lib/components/file/index.js"
+    },
+    "./file/package.json": "./lib/components/file/package.json",
+    "./file/locale/*.json": "./lib/components/file/locale/*.json",
+    "./background": {
+      "default": "./lib/components/background/index.js"
+    },
+    "./background/package.json": "./lib/components/background/package.json",
+    "./background/locale/*.json": "./lib/components/background/locale/*.json",
+    "./ptc": {
+      "default": "./lib/components/ptc/index.js"
+    },
+    "./ptc/package.json": "./lib/components/ptc/package.json",
+    "./ptc/locale/*.json": "./lib/components/ptc/locale/*.json"
+  },
+  "bin": {
+    "dsh-ops": "bin/dsh-ops.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib",
+    "bin",
+    "cordis.patch.yml",
+    "dsh-plugin.json",
+    "icon.png",
+    "locale",
+    "docs",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "README.en.md",
+    "README.zh.md",
+    "PROVENANCE.md",
+    "CHANGELOG.md",
+    "runtime",
+    "native/Cargo.toml",
+    "native/Cargo.lock",
+    "native/src",
+    "vendor/fastctx/Cargo.toml",
+    "vendor/fastctx/Cargo.lock",
+    "vendor/fastctx/build.rs",
+    "vendor/fastctx/src",
+    "vendor/fastctx/third-party",
+    "vendor/fastctx/LICENSE-APACHE",
+    "vendor/fastctx/NOTICE",
+    "vendor/fastctx/THIRD_PARTY_LICENSES.md",
+    "vendor/fastctx/THIRD_PARTY_LICENSES_RUST.md",
+    "vendor/fastctx/FORK.md",
+    "vendor/fastctx/UPSTREAM.md"
+  ],
+  "scripts": {
+    "status": "node bin/dsh-ops.mjs status",
+    "build:ptc": "node bin/dsh-ops.mjs build-ptc",
+    "stage:ptc": "node bin/native-runtime.mjs stage",
+    "check:ptc-runtime": "node bin/native-runtime.mjs check",
+    "test:ptc": "node test/run.mjs ptc",
+    "build:rust": "node bin/dsh-ops.mjs build",
+    "provision": "node bin/dsh-ops.mjs provision",
+    "validate:manifest": "node scripts/validate-manifest.mjs",
+    "test": "node test/run.mjs",
+    "verify": "node scripts/validate-manifest.mjs && node test/run.mjs"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/dsh": "^0.2.0-rc.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "@dsh-ops/bash-win32-x64": "0.2.1",
+    "@dsh-ops/fastctx-win32-x64": "0.2.1",
+    "@dsh-ops/pwsh-win32-x64": "0.2.1"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-sandbox-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-subprocess": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-subprocess-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@dsh-std/manifest": "0.1.1-rc.3",
+    "yaml": "^2.9.1"
+  },
+  "engines": {
+    "node": "^22.19 || >=24"
+  }
+}

@@ -1,0 +1,40 @@
+FastCtx
+Copyright (c) 2026 yc-duan <dy2958830371@gmail.com>
+
+This product is developed and maintained at:
+https://github.com/yc-duan/fastctx
+
+
+================================================================
+ATTRIBUTION NOTICE
+================================================================
+
+Section 4(d) of the Apache License 2.0 requires that any Derivative
+Work you distribute carry a readable copy of the notice below, in the
+documentation you ship with it and wherever third-party notices
+normally appear. For a source repository, that place is the README.
+
+Reproduce it verbatim:
+
+    This product includes FastCtx
+    (https://github.com/yc-duan/fastctx), Copyright (c) 2026 yc-duan,
+    used under the Apache License 2.0.
+
+    FastCtx is redistributed and/or modified here by the maintainer of
+    this distribution. Any such change is that maintainer's own work
+    and their sole responsibility. It is not endorsed by, not
+    supported by, and not attributable to the author of FastCtx, who
+    accepts no liability of any kind arising from this distribution or
+    from anything built on top of it.
+
+Section 4(b) separately requires that files you modified carry
+prominent notices stating that you changed them.
+
+
+================================================================
+
+Third-party components bundled with this software are listed in
+THIRD_PARTY_LICENSES.md.
+
+If you integrate, redistribute, or build a product on top of this work,
+the author would appreciate hearing from you: dy2958830371@gmail.com

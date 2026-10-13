@@ -1,0 +1,6 @@
+{
+  "name": "dsh-ops-background",
+  "description": "Manage scientific simulations, model training, and other long-running background tasks.",
+  "icon": "./icon.png",
+  "type": "module"
+}

@@ -1,0 +1,25 @@
+{
+  "description": "The FastCtx runtime for Windows x64, built from the fork vendored in the dsh-ops plugin.",
+  "publishConfig": { "access": "public" },
+  "homepage": "https://github.com/T-Auto/dsh-ops#readme",
+  "bugs": { "url": "https://github.com/T-Auto/dsh-ops/issues" },
+  "license": "Apache-2.0",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "keywords": [
+    "dsh-ops",
+    "fastctx",
+    "mcp",
+    "repository-tools",
+    "win32",
+    "x64"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Auto/dsh-ops.git"
+  }
+}

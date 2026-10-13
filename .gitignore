@@ -1,0 +1,8 @@
+# Local build scratch
+*.log
+*.tmp
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+desktop.ini

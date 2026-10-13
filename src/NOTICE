@@ -1,0 +1,106 @@
+dsh-ops
+Copyright (c) 2026 T-Auto and the dsh-ops contributors
+
+================================================================
+COMPOSITE LICENSE
+================================================================
+
+This distribution is licensed under the composite expression
+
+    MIT AND Apache-2.0
+
+because it contains two bodies of work under two licenses:
+
+1. The dsh-ops plugin — everything in this repository except
+   `vendor/fastctx/`. Licensed MIT. The license text is in `LICENSE`.
+
+2. The vendored FastCtx source in `vendor/fastctx/`. Licensed
+   Apache-2.0 by its author. The license text is in
+   `vendor/fastctx/LICENSE-APACHE`, upstream's notice is in
+   `vendor/fastctx/NOTICE`, and the exact upstream revision and every
+   difference from it are recorded in `vendor/fastctx/UPSTREAM.md` and
+   `vendor/fastctx/FORK.md`.
+
+The installed npm package additionally depends on the published FastCtx
+platform packages `@fastctx/<platform>` (Apache-2.0), which are separate
+works distributed under their own terms; `vendor/fastctx/THIRD_PARTY_LICENSES.md`
+lists the third-party components inside FastCtx itself. Bundled Pdfium
+notices are in `vendor/fastctx/third-party/pdfium-7763/`.
+
+The published package also declares this distribution's own platform
+packages as OPTIONAL dependencies, and the same packages — this
+distribution's own tarballs, and nothing upstream's — are the assets
+attached to the GitHub Release for a tag. They are optional in the
+dependency sense, and two of them are not payloads at all: no upstream
+binary travels in this distribution.
+
+  * `@dsh-ops/fastctx-<platform>-<arch>` — this fork's build of FastCtx,
+    a payload built by this distribution from `vendor/fastctx/`.
+    Apache-2.0, by FastCtx's author, with the removals this distribution
+    made: the notice upstream requires is reproduced in this file and in
+    both READMEs, every source file this distribution touched carries its
+    own Apache-2.0 section 4(b) notice, and the complete enumeration is
+    in `vendor/fastctx/FORK.md`. `PROVENANCE.md` records this package's
+    upstream revision, upstream version, and payload SHA-256.
+
+  * `@dsh-ops/bash-<platform>-<arch>` — a PIN, not a redistribution.
+    This distribution does not contain, forward, repackage, or
+    redistribute Git for Windows. The pin records the upstream release
+    the shell is taken from (`PortableGit-2.56.0.2-64-bit.7z.exe`, Git
+    for Windows `v2.56.0.windows.2`), the official URL that publishes it,
+    and its SHA-256; `dsh-ops provision-shells` reads the pin, downloads
+    that asset on the user's own machine, verifies the digest there, and
+    unpacks it there. Git for Windows is distributed under the GNU
+    General Public License version 2, so the bytes a user obtains that
+    way are GPL-2.0 and are used under that licence; its terms, its
+    copyright, and the corresponding source belong to the Git for
+    Windows project (https://github.com/git-for-windows/git) and to the
+    Git project (https://github.com/git/git). No GPL-2.0-covered
+    component is part of this distribution.
+
+  * `@dsh-ops/pwsh-<platform>-<arch>` — a PIN, not a redistribution.
+    This distribution does not contain, forward, repackage, or
+    redistribute PowerShell. The pin records the upstream release
+    (`PowerShell-7.6.6-win-x64.zip`, PowerShell `v7.6.6`), the official
+    URL that publishes it, and its SHA-256; `dsh-ops provision-shells
+    --pwsh` reads the pin, downloads that asset on the user's own
+    machine, and verifies the digest there. PowerShell is distributed by
+    Microsoft under the MIT licence; that licence text, its copyright,
+    and the corresponding source belong to Microsoft and to the
+    PowerShell project (https://github.com/PowerShell/PowerShell).
+
+Nothing in this distribution is relicensed. The MIT grant covers only the
+work this repository authored.
+
+================================================================
+ATTRIBUTION NOTICE — FastCtx
+================================================================
+
+FastCtx's NOTICE requires that a derivative work carry the following
+notice verbatim in its documentation. It is reproduced here and in the
+repository README, as required.
+
+    This product includes FastCtx
+    (https://github.com/yc-duan/fastctx), Copyright (c) 2026 yc-duan,
+    used under the Apache License 2.0.
+
+    FastCtx is redistributed and/or modified here by the maintainer of
+    this distribution. Any such change is that maintainer's own work
+    and their sole responsibility. It is not endorsed by, not
+    supported by, and not attributable to the author of FastCtx, who
+    accepts no liability of any kind arising from this distribution or
+    from anything built on top of it.
+
+The changes this distribution makes to FastCtx are removals — of
+distribution and CI machinery, and of the code that existed only for
+upstream's standalone product (the control terminal, the self-updater and
+its upstream update detection, and the Codex integration) — together with
+the edits those removals forced in the files that remain. Every source
+file this distribution touched carries its own Apache-2.0 section 4(b)
+notice at the top, and the complete enumeration is in
+`vendor/fastctx/FORK.md`.
+
+================================================================
+
+FastCtx is developed and maintained at
+https://github.com/yc-duan/fastctx

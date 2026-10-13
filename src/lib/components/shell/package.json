@@ -1,0 +1,6 @@
+{
+  "name": "dsh-ops-bash & powershell 7",
+  "description": "Prefer bash for general commands and provide PowerShell 7 when Windows-native functionality is needed.",
+  "icon": "./icon.png",
+  "type": "module"
+}

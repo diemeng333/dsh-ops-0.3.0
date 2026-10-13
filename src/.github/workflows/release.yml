@@ -1,0 +1,200 @@
+name: Release
+
+# NOT RUNNING. Actions are disabled at repository level (Settings → Actions).
+# Publishing is done from a maintainer machine (see docs/release-0.2.1.md), and
+# release tags are published as tag + notes without the tarball assets this file
+# would upload — npm is the installation channel, so the assets were redundant.
+# Pushing a v* tag does not trigger this workflow.
+
+# Windows payload packages are built and published before the main package.
+# All three carry runtime files and are injected as exact optionalDependencies.
+# Repository tests are intentionally not a publishing prerequisite.
+#
+# `workflow_dispatch` re-runs this pipeline for an existing tag ref (use "Run
+# workflow" with the tag selected): a release that failed after publishing some
+# of its packages can be finished rather than restarted from scratch, because
+# each publish step skips a version the registry already has.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  native-ptc:
+    name: Build native PTC (${{ matrix.platform }}-${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: windows-latest, platform: win32, arch: x64, target: x86_64-pc-windows-msvc }
+          - { runner: windows-latest, platform: win32, arch: arm64, target: aarch64-pc-windows-msvc }
+          - { runner: ubuntu-latest, platform: linux, arch: x64, target: x86_64-unknown-linux-gnu }
+          - { runner: ubuntu-24.04-arm, platform: linux, arch: arm64, target: aarch64-unknown-linux-gnu }
+          - { runner: macos-15-intel, platform: darwin, arch: x64, target: x86_64-apple-darwin }
+          - { runner: macos-latest, platform: darwin, arch: arm64, target: aarch64-apple-darwin }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.18.0'
+      - uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
+        with:
+          toolchain: 1.97.1
+          target: ${{ matrix.target }}
+          cache: false
+      - name: Build original Rust runtime
+        run: cargo build --release --locked --manifest-path native/Cargo.toml --target ${{ matrix.target }}
+      - name: Stage native runtime and provenance
+        run: node bin/native-runtime.mjs stage --platform ${{ matrix.platform }}-${{ matrix.arch }} --input native/target/${{ matrix.target }}/release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ptc-${{ matrix.platform }}-${{ matrix.arch }}
+          path: runtime/
+          if-no-files-found: error
+
+  release:
+    needs: native-ptc
+    name: Build and publish the release
+    env:
+      # The build writes tarballs, checksums, and the publish directory here, and
+      # every later step reads the plan the build wrote rather than recomputing a
+      # path. Relative on purpose: neither a workflow-level nor a job-level `env`
+      # may name the `runner` context, and naming it in either place makes GitHub
+      # reject the whole file before the run starts — which is how the first tag
+      # of this repository produced a zero-second failure instead of a release.
+      # Steps start in the workspace root, so this is a directory of the checkout
+      # on an ephemeral runner.
+      DIST: dist-release
+    # FastCtx is a native binary and only Windows payloads are published
+    # (`scripts/build-platform-packages.mjs` refuses another platform), so the
+    # release job has to run where those binaries can be built.
+    runs-on: windows-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.18.0'
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Set up the Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
+        with:
+          # Pinned rather than `stable`: the released FastCtx binary must be
+          # reproducible from the tag, and the vendored crate needs edition 2024
+          # (rust-version 1.88).
+          toolchain: 1.97.1
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Repository tests are paused by the maintainer; do not block npm publishing.
+
+      - name: Check the tag against the package version
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+            throw "tag $env:GITHUB_REF_NAME does not match the package version v$version"
+          }
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ptc-*
+          path: runtime
+          merge-multiple: true
+
+      - name: Verify all native PTC runtime targets
+        run: npm run check:ptc-runtime
+
+      - name: Build the platform packages and the publish directory
+        run: node scripts/build-platform-packages.mjs --dist "$env:DIST"
+
+      - name: Verify the built artifacts
+        # Downloads and builds nothing: re-reads every digest the build recorded.
+        run: node scripts/build-platform-packages.mjs check --dist "$env:DIST"
+
+      - name: Check the publishing credentials
+        id: credentials
+        shell: pwsh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if ($env:NODE_AUTH_TOKEN) {
+            Write-Host 'NPM_TOKEN is set: this run publishes the platform packages, then the main package.'
+            "publish=yes" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host '::warning::NPM_TOKEN is not set: this run attaches the release assets but publishes nothing to npm.'
+            "publish=no" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Publish the platform packages
+        if: steps.credentials.outputs.publish == 'yes'
+        shell: pwsh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          $plan = Get-Content "$env:DIST/publish-plan.json" -Raw | ConvertFrom-Json
+          foreach ($package in $plan.platformPackages) {
+            $spec = "$($package.name)@$($package.version)"
+            npm view $spec version 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "already published, skipping: $spec"
+              continue
+            }
+            Write-Host "publishing $spec from $($package.tarball)"
+            npm publish $package.tarball --access public
+            if ($LASTEXITCODE -ne 0) { throw "npm publish failed for $spec" }
+          }
+
+      - name: Publish the main package
+        if: steps.credentials.outputs.publish == 'yes'
+        shell: pwsh
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          $plan = Get-Content "$env:DIST/publish-plan.json" -Raw | ConvertFrom-Json
+          $spec = "$($plan.mainName)@$($plan.mainVersion)"
+          npm view $spec version 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "already published, skipping: $spec"
+            exit 0
+          }
+          # All three runtime payload packages are exact optional dependencies.
+          Write-Host "publishing $spec from $($plan.mainPublishDir)"
+          npm publish $plan.mainPublishDir --access public
+          if ($LASTEXITCODE -ne 0) { throw "npm publish failed for $spec" }
+
+      - name: Create the release and attach the assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:GITHUB_REF_TYPE -ne 'tag') {
+            Write-Host 'Branch dispatch: npm publication completed; GitHub Release requires a version tag.'
+            exit 0
+          }
+          $plan = Get-Content "$env:DIST/publish-plan.json" -Raw | ConvertFrom-Json
+          # Four installable assets plus the checksum manifest the offline
+          # instructions verify them against.
+          $assets = @($plan.mainTarball) + @($plan.platformTarballs) + @("$env:DIST/$($plan.sha256sums)")
+          gh release view "$env:GITHUB_REF_NAME" 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload "$env:GITHUB_REF_NAME" @assets --clobber
+          } else {
+            gh release create "$env:GITHUB_REF_NAME" @assets --title "$env:GITHUB_REF_NAME" --generate-notes --verify-tag
+          }
+          if ($LASTEXITCODE -ne 0) { throw "attaching the release assets failed" }

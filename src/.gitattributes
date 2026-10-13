@@ -1,0 +1,16 @@
+# Source and docs are text; keep them LF in the repository regardless of the
+# platform that checked them out.
+* text=auto eol=lf
+
+*.exe binary
+*.dll binary
+*.png binary
+*.gif binary
+*.pdf binary
+
+# Rust sources vendored from FastCtx: upstream ships these with LF endings and a
+# re-vendor should not produce a whole-tree diff on Windows.
+vendor/fastctx/** text eol=lf
+
+# Generated or third-party data with meaningful byte content.
+vendor/fastctx/tests/** -text

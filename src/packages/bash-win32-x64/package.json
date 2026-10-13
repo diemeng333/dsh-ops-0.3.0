@@ -1,0 +1,27 @@
+{
+  "description": "Complete Git for Windows PortableGit runtime for dsh-ops, including GNU bash 5.3.15 and all companion tools and licenses.",
+  "publishConfig": { "access": "public" },
+  "homepage": "https://github.com/T-Auto/dsh-ops#readme",
+  "bugs": { "url": "https://github.com/T-Auto/dsh-ops/issues" },
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "keywords": [
+    "dsh-ops",
+    "bash",
+    "git-bash",
+    "git-for-windows",
+    "portablegit",
+    "payload",
+    "win32",
+    "x64"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Auto/dsh-ops.git"
+  }
+}

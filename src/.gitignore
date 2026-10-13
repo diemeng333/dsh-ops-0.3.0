@@ -1,0 +1,25 @@
+# Local release artifacts and credentials
+dist/
+
+# Native worker build output and local audit stores
+runtime/
+native/target/
+.dsh-ops/
+
+# Dependencies
+node_modules/
+
+# Vendored FastCtx build output (source is committed; the binary is not)
+vendor/fastctx/target/
+
+# Scratch trees used by the suites and by hand
+.tmp-*
+*.scratch.*
+.scratch-*
+
+# Local cross-session handoff, project context and architecture notes
+memorybank/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db

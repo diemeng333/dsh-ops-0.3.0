@@ -1,0 +1,25 @@
+{
+  "description": "Complete PowerShell 7.6.6 Windows x64 runtime for the dsh-ops host pwsh executor, including companion libraries and licenses.",
+  "publishConfig": { "access": "public" },
+  "homepage": "https://github.com/T-Auto/dsh-ops#readme",
+  "bugs": { "url": "https://github.com/T-Auto/dsh-ops/issues" },
+  "license": "MIT",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "keywords": [
+    "dsh-ops",
+    "pwsh",
+    "powershell",
+    "payload",
+    "win32",
+    "x64"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Auto/dsh-ops.git"
+  }
+}

@@ -1,0 +1,145 @@
+name: CI
+
+# NOT RUNNING. Actions are disabled at repository level (Settings → Actions),
+# so this file is documentation of the gate's design rather than a live gate.
+# Nothing here runs on push, tag, schedule or manual dispatch.
+
+# TWO JOBS, ON PURPOSE, AND NEITHER MAY STAND IN FOR THE OTHER.
+#
+#   hermetic     the whole gate on a machine with no FastCtx build at all: no
+#                Rust toolchain, no provisioned runtime, no installed platform
+#                package. Fast, and the suites that need a runtime SKIP — they
+#                are counted and printed as skipped, never as passed.
+#   integration  the same gate with a real runtime built from the vendored
+#                source and DSH_OPS_REQUIRE_RUNTIME=1, which turns any skip into
+#                a failure. This is the job that produces evidence about the
+#                composition: mounting the plugin, hosting FastCtx, publishing
+#                tools.
+#
+# Only `test/mount.test.mjs` needs a runtime today. It resolves one exactly the
+# way the plugin does (config, `DSH_OPS_FASTCTX_BIN`, the managed runtime, the
+# in-repo release build, this plugin's own platform package, `PATH`) and skips
+# itself when there is none. To run that suite locally, build one:
+#
+#   cargo build --release --locked --manifest-path vendor/fastctx/Cargo.toml
+#
+# or point at a build you already have:
+#
+#   DSH_OPS_FASTCTX_BIN=<path to the fastctx executable> DSH_OPS_REQUIRE_RUNTIME=1 npm run verify
+#
+# PTC acceptance always builds the small independent worker; it never substitutes
+# for the separate FastCtx integration evidence. This remains manual-only.
+# A green hermetic run is not evidence about the FastCtx runtime, and the hermetic job
+# ends by asserting that it really did skip the suite rather than quietly lose
+# it.
+# Automatic gates paused by the maintainer; existing suites remain opt-in.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hermetic:
+    name: Gate without a FastCtx build
+    runs-on: windows-latest
+    env:
+      # Explicit, so this job's meaning does not depend on the default.
+      DSH_OPS_REQUIRE_RUNTIME: '0'
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.18.0'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up native Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
+        with:
+          toolchain: 1.97.1
+          cache: false
+
+      - name: Build the independent PTC worker (FastCtx remains absent)
+        run: npm run build:ptc
+
+      - name: Run the gate
+        run: npm run verify
+
+      - name: Assert the runtime suite skipped rather than passed
+        # The failure this guards against is a gate that reports success about a
+        # suite it never ran. `test/mount.test.mjs` exits 77 when it has no
+        # runtime (test/lib/harness.mjs `skipSuite`), and this job has none.
+        shell: pwsh
+        run: |
+          # Not `$home`: that name is PowerShell's own read-only variable for the
+          # user profile, so assigning to it fails this step before the suite ever
+          # runs — which is what the first hermetic run of this repository did.
+          # And not `[System.IO.Path]::GetTempPath()` either: it can disagree with
+          # the directory Node calls `os.tmpdir()`, and the suite refuses a
+          # DSH_HOME outside its own temporary directory. `$env:RUNNER_TEMP` is
+          # the directory both sides agree on.
+          $staging = Join-Path $env:RUNNER_TEMP ("dsh-ops-hermetic-" + [guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $staging | Out-Null
+          $env:DSH_HOME = $staging
+          node test/mount.test.mjs
+          $code = $LASTEXITCODE
+          Remove-Item -Recurse -Force $staging
+          if ($code -eq 77) {
+            Write-Host 'mount skipped, as a machine without a runtime must'
+            exit 0
+          }
+          throw "expected the mount suite to skip (exit 77) without a FastCtx runtime, got exit $code"
+
+  integration:
+    name: Gate with the vendored FastCtx build
+    runs-on: windows-latest
+    env:
+      # A skip here is a failure: this job exists to run what the hermetic one
+      # cannot.
+      DSH_OPS_REQUIRE_RUNTIME: '1'
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.18.0'
+          cache: npm
+
+      - name: Set up the Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1.17.0
+        with:
+          # Pinned rather than `stable`, for the same reason the release job pins
+          # it: the vendored crate needs edition 2024 (rust-version 1.88), and a
+          # gate should not change meaning when a toolchain moves.
+          toolchain: 1.97.1
+          cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the vendored FastCtx runtime
+        run: cargo build --release --locked --manifest-path vendor/fastctx/Cargo.toml
+
+      - name: Build the independent PTC worker
+        run: npm run build:ptc
+
+      - name: Run the gate (a skipped suite fails here)
+        run: npm run verify
+
+      - name: Show which runtime the integration suite hosted
+        # Redundant with the gate above, deliberately: this prints the resolved
+        # executable, its source rung, and its version, so two runs that
+        # disagree about "the same" suite are visible in the log.
+        run: node test/run.mjs mount

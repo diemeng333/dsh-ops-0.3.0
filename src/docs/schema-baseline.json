@@ -1,0 +1,64 @@
+{
+  "format": "dsh-ops-schema-measurement-v1",
+  "metric": "UTF-8 bytes of compact JSON {name,description,parameters}; approximate tokens = ceil(bytes/4), not a tokenizer or usage-frequency count",
+  "runtimeVersion": "fastctx 0.2.6",
+  "tools": [
+    {
+      "name": "ops_glob",
+      "bytes": 2485,
+      "approximateTokens": 622
+    },
+    {
+      "name": "ops_grep",
+      "bytes": 3766,
+      "approximateTokens": 942
+    },
+    {
+      "name": "ops_inspect_local_file",
+      "bytes": 4375,
+      "approximateTokens": 1094
+    },
+    {
+      "name": "ops_job_kill",
+      "bytes": 289,
+      "approximateTokens": 73
+    },
+    {
+      "name": "ops_job_list",
+      "bytes": 889,
+      "approximateTokens": 223
+    },
+    {
+      "name": "ops_job_output",
+      "bytes": 1717,
+      "approximateTokens": 430
+    },
+    {
+      "name": "ops_replace",
+      "bytes": 2181,
+      "approximateTokens": 546
+    },
+    {
+      "name": "ops_run",
+      "bytes": 1672,
+      "approximateTokens": 418
+    },
+    {
+      "name": "ops_run_background",
+      "bytes": 1515,
+      "approximateTokens": 379
+    }
+  ],
+  "total": {
+    "bytes": 18889,
+    "approximateTokens": 4723
+  },
+  "toolingPrompt": {
+    "bytes": 3373,
+    "approximateTokens": 844
+  },
+  "rawServerInstructions": {
+    "bytes": 246,
+    "approximateTokens": 62
+  }
+}

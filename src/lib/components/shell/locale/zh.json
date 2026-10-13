@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "dsh-ops-bash & powershell 7",
+    "description": "将默认终端改为bash，以及bash覆盖不到时提供powershell7"
+  }
+}

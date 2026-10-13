@@ -1,0 +1,6 @@
+{
+  "name": "dsh-ops-ptc",
+  "description": "Native Rust PTC batch operations and bounded result references for Windows, macOS and Linux.",
+  "icon": "./icon.png",
+  "type": "module"
+}

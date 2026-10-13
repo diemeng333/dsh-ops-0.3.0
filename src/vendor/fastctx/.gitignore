@@ -1,0 +1,17 @@
+# Rust
+/target
+/tools/compat-v011-capture/target/
+/.pdfium-archive-cache
+/dist
+/packages/fastctx-*/bin/
+/packages/*/licenses/
+
+# Python verification caches
+__pycache__/
+*.py[cod]
+
+# Local working files (not part of the published source)
+AGENTS.md
+CLAUDE.md
+.sisyphus/
+dev-notes/

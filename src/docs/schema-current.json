@@ -1,0 +1,91 @@
+{
+  "format": "dsh-ops-schema-measurement-v1",
+  "metric": "UTF-8 bytes of compact JSON {name,description,parameters}; approximate tokens = ceil(bytes/4), not a tokenizer or usage-frequency count",
+  "runtimeVersion": "fastctx 0.2.6",
+  "tools": [
+    {
+      "name": "ops_glob",
+      "bytes": 1226,
+      "approximateTokens": 307
+    },
+    {
+      "name": "ops_grep",
+      "bytes": 2019,
+      "approximateTokens": 505
+    },
+    {
+      "name": "ops_inspect_local_file",
+      "bytes": 1968,
+      "approximateTokens": 492
+    },
+    {
+      "name": "ops_job_kill",
+      "bytes": 267,
+      "approximateTokens": 67
+    },
+    {
+      "name": "ops_job_list",
+      "bytes": 694,
+      "approximateTokens": 174
+    },
+    {
+      "name": "ops_job_output",
+      "bytes": 668,
+      "approximateTokens": 167
+    },
+    {
+      "name": "ops_replace",
+      "bytes": 1511,
+      "approximateTokens": 378
+    },
+    {
+      "name": "ops_run_background",
+      "bytes": 635,
+      "approximateTokens": 159
+    }
+  ],
+  "total": {
+    "bytes": 8988,
+    "approximateTokens": 2247
+  },
+  "fileOnly": {
+    "bytes": 6724,
+    "approximateTokens": 1681
+  },
+  "fileOnlyPrompt": {
+    "bytes": 498,
+    "approximateTokens": 125
+  },
+  "bashSchema": {
+    "bytes": 961,
+    "approximateTokens": 241
+  },
+  "defaultWithBash": {
+    "bytes": 7685,
+    "approximateTokens": 1922
+  },
+  "fullWithBash": {
+    "bytes": 9949,
+    "approximateTokens": 2488
+  },
+  "shellPrompt": {
+    "bytes": 492,
+    "approximateTokens": 123
+  },
+  "backgroundPrompt": {
+    "bytes": 269,
+    "approximateTokens": 68
+  },
+  "toolingPrompt": {
+    "bytes": 878,
+    "approximateTokens": 220
+  },
+  "publishedServerInstructions": {
+    "bytes": 0,
+    "approximateTokens": 0
+  },
+  "rawServerInstructions": {
+    "bytes": 246,
+    "approximateTokens": 62
+  }
+}
